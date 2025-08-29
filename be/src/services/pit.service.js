@@ -1,7 +1,7 @@
 const xlsx = require("xlsx");
 const path = require('path');
 const fs = require('fs').promises;
-const databaseManager = require('../core/DatabaseManager');
+const databaseManager = require('../config/DatabaseManager');
 
 const calculateProgressivePit = (taxableIncome) => {
     if (taxableIncome <= 0) return 0;

@@ -11,8 +11,8 @@ const username = process.env.PGUSER || process.env.POSTGRES_USER || 'postgres';
 const password = process.env.PGPASSWORD || process.env.POSTGRES_PASSWORD || '';
 const database = process.env.PGDATABASE || process.env.POSTGRES_DB || 'thue_tncn';
 
-const entitiesPath = path.join(__dirname, '..', 'entities', '*.entity.js');
-const migrationsPath = path.join(__dirname, '..', 'migrations', '*.js');
+const entitiesPath = path.join(__dirname, '..', 'models', '*.entity.js');
+const migrationsPath = path.join(__dirname, '..', 'database', 'migrations', '*.js');
 
 module.exports = new DataSource({
   type: 'postgres',

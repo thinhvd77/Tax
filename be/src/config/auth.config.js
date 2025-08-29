@@ -16,16 +16,6 @@ const authConfig = {
     maxLength: parseInt(process.env.PASSWORD_MAX_LENGTH || '128', 10)
   },
 
-  // Demo passwords (should be removed in production)
-  demoCredentials: {
-    enabled: process.env.DEMO_CREDENTIALS_ENABLED === 'true',
-    users: {
-      'uploader1': 'password123',
-      'reviewer1': 'password123',
-      'admin1': 'admin123'
-    }
-  },
-
   // Security settings
   security: {
     maxLoginAttempts: parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5', 10),

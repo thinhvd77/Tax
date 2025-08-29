@@ -1,11 +1,12 @@
 const express = require('express');
-const { authenticateToken, requireRole } = require('../controllers/auth.controller');
+const auth = require('../middlewares/auth');
+const requireRole = require('../middlewares/roles');
 const { deleteFile } = require('../controllers/file.controller');
 
 const router = express.Router();
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(auth);
 
 // DELETE /api/files/:fileId - Delete uploaded file
 router.delete('/:fileId', requireRole(['UPLOADER', 'REVIEWER']), deleteFile);

@@ -11,7 +11,7 @@ module.exports = new EntitySchema({
     // Organizational info
     department: { type: String, nullable: false },
     branch: { type: String, nullable: false },
-    role: {type: String, default: 'UPLOADER'},
+    role: { type: String, default: 'UPLOADER' },
     password: { type: String, nullable: true },
     createdAt: { type: 'timestamp with time zone', name: 'created_at', createDate: true },
     updatedAt: { type: 'timestamp with time zone', name: 'updated_at', updateDate: true }

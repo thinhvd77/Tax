@@ -1,4 +1,4 @@
-const databaseManager = require('../core/DatabaseManager');
+const databaseManager = require('../config/DatabaseManager');
 const passwordService = require('./password.service');
 const tokenService = require('./token.service');
 const { validators, ValidationError } = require('../utils/validation.utils');

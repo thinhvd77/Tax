@@ -1,28 +1,8 @@
-const databaseManager = require('../core/DatabaseManager');
-const fs = require('fs').promises;
 const path = require('path');
 const multer = require('multer');
+const { uploadFiles: uploadFilesService, listFiles: listFilesService, deleteFile: deleteFileService, ServiceError } = require('../services/file.service');
 
-// Resolve stored upload path safely
-const resolveUploadedPath = (p) => {
-  try {
-    if (!p) return p;
-    return path.isAbsolute(p) ? p : path.join(process.cwd(), p);
-  } catch {
-    return p;
-  }
-};
-
-// Decode potentially mis-encoded filenames (latin1 -> utf8)
-const decodeUnicodeFilename = (name) => {
-  try {
-    if (!name) return name;
-    // Convert from latin1 (binary) to utf8 to fix Unicode characters
-    return Buffer.from(name, 'latin1').toString('utf8');
-  } catch (_) {
-    return name;
-  }
-};
+// Controller keeps storage config and validation; filenames are normalized in service
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -31,7 +11,8 @@ const storage = multer.diskStorage({
     const uploadDir = path.join(__dirname, '../../uploads', periodId);
 
     try {
-      await fs.mkdir(uploadDir, { recursive: true });
+      const fsPromises = require('fs').promises;
+      await fsPromises.mkdir(uploadDir, { recursive: true });
       cb(null, uploadDir);
     } catch (error) {
       cb(error, null);
@@ -40,7 +21,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     // Generate unique filename with timestamp
     const timestamp = Date.now();
-    const original = decodeUnicodeFilename(file.originalname);
+    const original = file.originalname;
     const ext = path.extname(original);
     const name = path.basename(original, ext);
     cb(null, `${name}_${timestamp}${ext}`);
@@ -74,39 +55,7 @@ const uploadFiles = async (req, res) => {
     // Handle both single file (req.file) and multiple files (req.files)
     const files = req.files || (req.file ? [req.file] : []);
 
-    if (!files || files.length === 0) {
-      return res.status(400).json({
-        message: 'No files uploaded'
-      });
-    }
-
-    const repositories = databaseManager.getRepositories();
-
-    // Verify tax period exists
-    const period = await repositories.taxPeriods.findById(periodId);
-    if (!period) {
-      return res.status(404).json({
-        message: 'Tax period not found'
-      });
-    }
-
-    // Create database records for uploaded files
-    const fileRecords = [];
-    for (const file of files) {
-      const decodedOriginalName = decodeUnicodeFilename(file.originalname);
-      const fileRecord = await repositories.uploadedFiles.create({
-        periodId,
-        fileName: decodedOriginalName,
-        filePath: file.path,
-        uploadedBy: req.user.employeeCode,
-        fileSize: file.size,
-        contentType: file.mimetype
-      });
-      fileRecords.push(fileRecord);
-    }
-
-    // Update file count in period
-    await repositories.taxPeriods.updateFileCount(periodId, files.length);
+  const fileRecords = await uploadFilesService(periodId, files, req.user);
 
     res.status(201).json({
       message: `${files.length} file(s) uploaded successfully`,
@@ -120,10 +69,8 @@ const uploadFiles = async (req, res) => {
 
   } catch (error) {
     console.error('Error uploading files:', error);
-    res.status(500).json({
-      message: 'Error uploading files',
-      error: error.message
-    });
+  const status = error instanceof ServiceError && error.status ? error.status : 500;
+  res.status(status).json({ message: error.message || 'Error uploading files' });
   }
 };
 
@@ -132,8 +79,7 @@ const getFiles = async (req, res) => {
   try {
     const { periodId } = req.params;
 
-    const repositories = databaseManager.getRepositories();
-    const files = await repositories.uploadedFiles.findByPeriodId(periodId);
+  const files = await listFilesService(periodId);
 
     const formattedFiles = files.map(file => ({
       fileId: file.fileId,
@@ -148,47 +94,16 @@ const getFiles = async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching files:', error);
-    res.status(500).json({
-      message: 'Error fetching files'
-    });
+    const status = error instanceof ServiceError && error.status ? error.status : 500;
+    res.status(status).json({ message: error.message || 'Error fetching files' });
   }
 };
 
 // Delete a file
 const deleteFile = async (req, res) => {
   try {
-    const { fileId } = req.params;
-
-    const repositories = databaseManager.getRepositories();
-    const file = await repositories.uploadedFiles.findWithRelations(fileId);
-
-    if (!file) {
-      return res.status(404).json({
-        message: 'File not found'
-      });
-    }
-
-    // Check permissions - only admin or uploader can delete
-    if (req.user.role !== 'ADMIN' && file.uploadedBy !== req.user.employeeCode) {
-      return res.status(403).json({
-        message: 'You do not have permission to delete this file'
-      });
-    }
-
-    // Delete physical file
-    try {
-      const resolvedPath = resolveUploadedPath(file.filePath);
-      await fs.unlink(resolvedPath);
-    } catch (physicalError) {
-      console.warn('Could not delete physical file:', physicalError.message);
-      // Continue with database deletion even if physical file deletion fails
-    }
-
-    // Delete database record
-    await repositories.uploadedFiles.deleteById(fileId);
-
-    // Update file count in period
-    await repositories.taxPeriods.updateFileCount(file.periodId, -1);
+  const { fileId } = req.params;
+  await deleteFileService(fileId, req.user);
 
     res.json({
       message: 'File deleted successfully'
@@ -196,9 +111,8 @@ const deleteFile = async (req, res) => {
 
   } catch (error) {
     console.error('Error deleting file:', error);
-    res.status(500).json({
-      message: 'Error deleting file'
-    });
+    const status = error instanceof ServiceError && error.status ? error.status : 500;
+    res.status(status).json({ message: error.message || 'Error deleting file' });
   }
 };
 

@@ -1,4 +1,4 @@
-const dataSource = require('../config/dataSource');
+const dataSource = require('./dataSource');
 const passwordService = require('../services/password.service');
 const UserRepository = require('../repositories/UserRepository');
 const TaxPeriodRepository = require('../repositories/TaxPeriodRepository');

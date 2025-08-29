@@ -1,11 +1,12 @@
 const express = require('express');
-const { authenticateToken, requireRole } = require('../controllers/auth.controller');
+const auth = require('../middlewares/auth');
+const requireRole = require('../middlewares/roles');
 const { uploadMultiple, uploadFiles, getFiles } = require('../controllers/file.controller');
 
 const router = express.Router();
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(auth);
 
 // GET /api/periods/:periodId/files - Get files for period
 router.get('/:periodId/files', getFiles);

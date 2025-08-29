@@ -33,43 +33,5 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
-// Simple auth middleware (delegates to service)
-const authenticateToken = async (req, res, next) => {
-  try {
-    const user = await verifyTokenFromHeader(req.headers.authorization);
-    req.user = user;
-    next();
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-    const status = error instanceof ServiceError && error.status ? error.status : 401;
-    res.status(status).json({
-      message: error.message || 'Invalid token'
-    });
-  }
-};
 
-// Role-based access control middleware
-const requireRole = (roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        message: 'Authentication required'
-      });
-    }
-
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        message: 'Insufficient permissions'
-      });
-    }
-
-    next();
-  };
-};
-
-module.exports = {
-  login,
-  getCurrentUser,
-  authenticateToken,
-  requireRole
-};
+module.exports = { login, getCurrentUser };

@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const authConfig = require('../config/auth.config');
 const AUTH_CONSTANTS = require('../constants/auth.constants');
 const { InvalidTokenError, TokenExpiredError } = require('../errors/auth.errors');
@@ -16,17 +17,14 @@ class TokenService {
    * @returns {string} Mock token
    */
   generateMockToken(userId, payload = {}) {
-    const tokenData = {
-      userId,
-      ...payload,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
-      iss: this.config.issuer,
-      aud: this.config.audience
+    // Backwards-compatible name, but now returns a real JWT
+    const claims = { userId, ...payload };
+    const options = {
+      expiresIn: this.config.expiresIn || '24h',
+      issuer: this.config.issuer,
+      audience: this.config.audience
     };
-
-    // In a real implementation, this would use JWT library
-    return `${this.mockTokenPrefix}${Buffer.from(JSON.stringify(tokenData)).toString('base64')}`;
+    return jwt.sign(claims, this.config.secret, options);
   }
 
   /**
@@ -60,35 +58,35 @@ class TokenService {
    * @throws {InvalidTokenError|TokenExpiredError} If token is invalid or expired
    */
   verifyMockToken(token) {
-    if (!token.startsWith(this.mockTokenPrefix)) {
-      throw new InvalidTokenError('Invalid token format');
-    }
-
+    // Accept both legacy mock tokens and real JWTs for transitional compatibility
     try {
-      const base64Data = token.replace(this.mockTokenPrefix, '');
-      const tokenData = JSON.parse(Buffer.from(base64Data, 'base64').toString());
-
-      // Check expiration
-      const now = Math.floor(Date.now() / 1000);
-      if (tokenData.exp && tokenData.exp < now) {
-        throw new TokenExpiredError();
+      // Try JWT verification first
+      return jwt.verify(token, this.config.secret, {
+        issuer: this.config.issuer,
+        audience: this.config.audience
+      });
+    } catch (e) {
+      // Fallback: legacy mock token format
+      try {
+        if (!token.startsWith(this.mockTokenPrefix)) throw e;
+        const base64Data = token.replace(this.mockTokenPrefix, '');
+        const tokenData = JSON.parse(Buffer.from(base64Data, 'base64').toString());
+        const now = Math.floor(Date.now() / 1000);
+        if (tokenData.exp && tokenData.exp < now) throw new TokenExpiredError();
+        if (this.config.issuer && tokenData.iss !== this.config.issuer) {
+          throw new InvalidTokenError('Invalid token issuer');
+        }
+        if (this.config.audience && tokenData.aud !== this.config.audience) {
+          throw new InvalidTokenError('Invalid token audience');
+        }
+        return tokenData;
+      } catch (err) {
+        // Normalize errors to our auth errors
+        if (err.name === 'TokenExpiredError' || err instanceof TokenExpiredError) {
+          throw new TokenExpiredError();
+        }
+        throw new InvalidTokenError('Invalid or expired token');
       }
-
-      // Verify issuer and audience if configured
-      if (this.config.issuer && tokenData.iss !== this.config.issuer) {
-        throw new InvalidTokenError('Invalid token issuer');
-      }
-
-      if (this.config.audience && tokenData.aud !== this.config.audience) {
-        throw new InvalidTokenError('Invalid token audience');
-      }
-
-      return tokenData;
-    } catch (error) {
-      if (error instanceof InvalidTokenError || error instanceof TokenExpiredError) {
-        throw error;
-      }
-      throw new InvalidTokenError('Failed to decode token');
     }
   }
 
@@ -108,8 +106,12 @@ class TokenService {
    * @returns {string} Refresh token
    */
   generateRefreshToken(userId) {
-    // This is a placeholder for future JWT refresh token implementation
-    return `refresh-${this.generateMockToken(userId, { type: 'refresh' })}`;
+    // Placeholder: in real implementation, use a different secret/expiry and store token id
+    return `refresh-${jwt.sign({ userId, type: 'refresh' }, this.config.secret, {
+      expiresIn: this.config.expiresIn || '24h',
+      issuer: this.config.issuer,
+      audience: this.config.audience
+    })}`;
   }
 
   /**

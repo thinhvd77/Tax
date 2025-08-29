@@ -1,5 +1,6 @@
 const express = require('express');
-const { login, getCurrentUser, authenticateToken } = require('../controllers/auth.controller');
+const { login, getCurrentUser } = require('../controllers/auth.controller');
+const auth = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -7,6 +8,6 @@ const router = express.Router();
 router.post('/login', login);
 
 // GET /api/auth/me - Get current user info
-router.get('/me', authenticateToken, getCurrentUser);
+router.get('/me', auth, getCurrentUser);
 
 module.exports = router;
