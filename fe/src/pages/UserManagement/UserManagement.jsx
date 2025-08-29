@@ -15,7 +15,7 @@ const UserManagement = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
-    const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+    const [toast, setToast] = useState({show: false, message: '', type: 'info'});
     const [formData, setFormData] = useState({
         employeeCode: '',
         fullName: '',
@@ -47,7 +47,7 @@ const UserManagement = () => {
 
     // Remove fetchStats function since the endpoint doesn't exist
 
-    const showToast = (message, type = 'info') => setToast({ show: true, message, type });
+    const showToast = (message, type = 'info') => setToast({show: true, message, type});
 
     const handleCreateUser = async (e) => {
         e.preventDefault();
@@ -193,7 +193,8 @@ const UserManagement = () => {
 
     return (
         <div className="user-management-container">
-            <Toast show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast(prev => ({ ...prev, show: false }))} />
+            <Toast show={toast.show} message={toast.message} type={toast.type}
+                   onClose={() => setToast(prev => ({...prev, show: false}))}/>
             {/* Header */}
             <div className="page-header">
                 <h1>User Management</h1>
@@ -284,13 +285,13 @@ const UserManagement = () => {
                 <div className="modal-overlay">
                     <div className="modal">
                         <div className="modal-header">
-                            <h3>Create New User</h3>
+                            <h3>Tạo mới người dùng</h3>
                             <button onClick={closeModals} className="close-btn">&times;</button>
                         </div>
                         <form onSubmit={handleCreateUser}>
                             <div className="modal-body">
                                 <div className="form-group">
-                                    <label>Employee Code *</label>
+                                    <label>Mã nhân viên <span style={{color: 'red'}}>*</span></label>
                                     <input
                                         type="text"
                                         value={formData.employeeCode}
@@ -299,7 +300,7 @@ const UserManagement = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Full Name *</label>
+                                    <label>Họ và tên <span style={{color: 'red'}}>*</span></label>
                                     <input
                                         type="text"
                                         value={formData.fullName}
@@ -308,29 +309,33 @@ const UserManagement = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Department *</label>
-                                    <input
-                                        type="text"
+                                    <label>Phòng ban <span style={{color: 'red'}}>*</span></label>
+                                    <select
                                         value={formData.department}
                                         onChange={(e) => setFormData({...formData, department: e.target.value})}
                                         required
-                                    />
+                                    >
+                                        <option value="" disabled>Chọn phòng ban</option>
+                                        <option value="Kế toán & ngân quỹ">Kế toán & ngân quỹ</option>
+                                        <option value="Tổng hợp">Tổng hợp</option>
+                                        <option value="IT">IT</option>
+                                    </select>
                                 </div>
                                 <div className="form-group">
-                                    <label>Branch *</label>
+                                    <label>Chi nhánh <span style={{color: 'red'}}>*</span></label>
                                     <select
                                         value={formData.branch}
                                         onChange={(e) => setFormData({...formData, branch: e.target.value})}
                                         required
                                     >
-                                        <option value="" disabled>Select branch</option>
+                                        <option value="" disabled>Chọn chi nhánh</option>
                                         {BRANCH_OPTIONS.map((b) => (
                                             <option key={b} value={b}>{b}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label>Password *</label>
+                                    <label>Mật khẩu <span style={{color: 'red'}}>*</span></label>
                                     <input
                                         type="password"
                                         value={formData.password}
@@ -339,7 +344,7 @@ const UserManagement = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Role</label>
+                                    <label>Vai trò</label>
                                     <select
                                         value={formData.role}
                                         onChange={(e) => setFormData({...formData, role: e.target.value})}
@@ -351,11 +356,11 @@ const UserManagement = () => {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" onClick={closeModals} className="btn btn-secondary">
-                                    Cancel
+                                <button type="button" onClick={closeModals} className="btn cancel-create-btn">
+                                    Hủy
                                 </button>
                                 <button type="submit" className="btn btn-primary">
-                                    Create User
+                                    Tạo mới
                                 </button>
                             </div>
                         </form>

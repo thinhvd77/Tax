@@ -337,7 +337,7 @@
 }
 
 .modal-content {
-  padding: 24px;
+  padding: 1rem;
 }
 
 .form-group {
@@ -380,6 +380,13 @@
   gap: 12px;
   justify-content: flex-end;
   margin-top: 24px;
+}
+
+.delete-modal-actions {
+    display: flex;
+    gap: 5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
 @media (max-width: 768px) {

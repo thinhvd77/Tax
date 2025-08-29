@@ -180,6 +180,15 @@
   background-color: #4b5563;
 }
 
+.cancel-create-btn {
+    background-color: #6b7280;
+    color: white;
+}
+
+.cancel-create-btn:hover {
+    background-color: #4b5563;
+}
+
 .btn-danger {
   background-color: #ef4444;
   color: white;
