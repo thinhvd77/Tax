@@ -2,57 +2,67 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #f6f8fb;
-  --text: #1f2937;
-  --muted: #6b7280;
-  /* Light theme primary brand color */
-  --primary: rgb(174, 28, 63);
-  --primary-contrast: #ffffff;
-  --primary-soft: rgba(174, 28, 63, 0.1);
-  --primary-border: rgba(174, 28, 63, 0.35);
-  --primary-hover: rgb(150, 24, 55);
+    --bg: #f1f1f1;
+    --text: #1f2937;
+    --muted: #6b7280;
+    /* Light theme primary brand color */
+    --primary: rgb(174, 28, 63);
+    --primary-contrast: #ffffff;
+    --primary-soft: rgba(174, 28, 63, 0.1);
+    --primary-border: rgba(174, 28, 63, 0.35);
+    --primary-hover: rgb(150, 24, 55);
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html, body, #root {
-  height: 100%;
+    height: 100%;
+    background-color: var(--bg);
 }
 
 body {
-  margin: 0;
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  color: var(--text);
-  background: radial-gradient(1200px 600px at 80% -100px, var(--primary-soft), transparent), var(--bg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    /*background: radial-gradient(1200px 600px at 80% -100px, var(--primary-soft), transparent), var(--bg);*/
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 a {
-  color: var(--primary);
-  text-decoration: none;
+    color: var(--primary);
+    text-decoration: none;
 }
 
-a:hover { text-decoration: underline; }
+a:hover {
+    text-decoration: underline;
+}
 
 h1, h2, h3, h4, h5, h6 {
-  margin: 0.3rem 0;
+    margin: 0.3rem 0;
 }
 
 button {
-  font-family: inherit;
+    font-family: inherit;
 }
 
 /* Utility containers */
 .container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.25rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.25rem;
 }
 
 /* Remove demo styles from Vite template */
-#root { max-width: none; padding: 0; text-align: initial; }
-.logo, .read-the-docs { display: none; }
+#root {
+    max-width: none;
+    padding: 0;
+    text-align: initial;
+}
+
+.logo, .read-the-docs {
+    display: none;
+}

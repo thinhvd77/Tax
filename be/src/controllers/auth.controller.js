@@ -22,6 +22,7 @@ const login = async (req, res) => {
 const getCurrentUser = async (req, res) => {
   try {
     const user = await getCurrentUserFromHeader(req.headers.authorization);
+      console.log(user)
     res.json(user);
   } catch (error) {
     console.error('Get user error:', error);

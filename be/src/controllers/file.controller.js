@@ -13,6 +13,17 @@ const resolveUploadedPath = (p) => {
   }
 };
 
+// Decode potentially mis-encoded filenames (latin1 -> utf8)
+const decodeUnicodeFilename = (name) => {
+  try {
+    if (!name) return name;
+    // Convert from latin1 (binary) to utf8 to fix Unicode characters
+    return Buffer.from(name, 'latin1').toString('utf8');
+  } catch (_) {
+    return name;
+  }
+};
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -29,8 +40,9 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     // Generate unique filename with timestamp
     const timestamp = Date.now();
-    const ext = path.extname(file.originalname);
-    const name = path.basename(file.originalname, ext);
+    const original = decodeUnicodeFilename(file.originalname);
+    const ext = path.extname(original);
+    const name = path.basename(original, ext);
     cb(null, `${name}_${timestamp}${ext}`);
   }
 });
@@ -81,9 +93,10 @@ const uploadFiles = async (req, res) => {
     // Create database records for uploaded files
     const fileRecords = [];
     for (const file of files) {
+      const decodedOriginalName = decodeUnicodeFilename(file.originalname);
       const fileRecord = await repositories.uploadedFiles.create({
         periodId,
-        fileName: file.originalname,
+        fileName: decodedOriginalName,
         filePath: file.path,
         uploadedBy: req.user.employeeCode,
         fileSize: file.size,

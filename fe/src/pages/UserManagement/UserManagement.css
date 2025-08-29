@@ -129,6 +129,11 @@
   color: #991b1b;
 }
 
+.role-badge.uploader {
+    background-color: #ddfedb;
+    color: #1eaf2a;
+}
+
 .role-badge.reviewer {
   background-color: #dbeafe;
   color: #1e40af;

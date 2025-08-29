@@ -445,6 +445,54 @@ const clearPreviewCache = async (req, res) => {
   }
 };
 
+// Delete a tax period and its files
+const deletePeriod = async (req, res) => {
+  try {
+    const { periodId } = req.params;
+
+    const repositories = databaseManager.getRepositories();
+    const period = await repositories.taxPeriods.findWithRelations(periodId);
+    if (!period) {
+      return res.status(404).json({
+        message: 'Tax period not found'
+      });
+    }
+
+    // Delete physical files for this period
+    if (Array.isArray(period.files)) {
+      for (const file of period.files) {
+        try {
+          const resolvedPath = resolveUploadedPath(file.filePath);
+          await fs.unlink(resolvedPath);
+        } catch (physicalError) {
+          console.warn('Could not delete physical file:', physicalError.message);
+        }
+      }
+    }
+
+    // Remove the uploads directory for this period if exists
+    try {
+      const uploadDir = path.join(process.cwd(), 'uploads', String(periodId));
+      await fs.rm(uploadDir, { recursive: true, force: true });
+    } catch (dirError) {
+      console.warn('Could not remove upload directory:', dirError.message);
+    }
+
+    // Delete database records
+    await repositories.uploadedFiles.deleteByPeriodId(periodId);
+    await repositories.taxPeriods.deleteById(periodId);
+
+    res.json({
+      message: 'Tax period deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting tax period:', error);
+    res.status(500).json({
+      message: 'Error deleting tax period'
+    });
+  }
+};
+
 module.exports = {
   getAllPeriods,
   createPeriod,
@@ -452,5 +500,6 @@ module.exports = {
   updatePeriodStatus,
   previewTaxCalculation,
   exportReport,
-  clearPreviewCache
+  clearPreviewCache,
+  deletePeriod
 };

@@ -7,7 +7,8 @@ const {
   updatePeriodStatus,
   previewTaxCalculation,
   exportReport,
-  clearPreviewCache
+  clearPreviewCache,
+  deletePeriod
 } = require('../controllers/taxPeriod.controller');
 
 const router = express.Router();
@@ -155,5 +156,8 @@ router.delete('/:periodId/cache', requireRole(['UPLOADER', 'REVIEWER']), clearPr
 
 // GET /api/periods/:periodId/export - Export final report (REVIEWER only)
 router.get('/:periodId/export', requireRole(['REVIEWER']), exportReport);
+
+// DELETE /api/periods/:periodId - Delete tax period (REVIEWER only)
+router.delete('/:periodId', requireRole(['REVIEWER', 'ADMIN']), deletePeriod);
 
 module.exports = router;

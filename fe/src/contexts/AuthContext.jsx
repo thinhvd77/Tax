@@ -23,6 +23,7 @@ export const AuthProvider = ({children}) => {
                     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                     const response = await api.get('/api/auth/me');
                     setUser(response.data);
+                    console.log(response.data)
                 } catch (error) {
                     console.error('Auth initialization failed:', error);
                     localStorage.removeItem('token');

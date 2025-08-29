@@ -2,6 +2,9 @@ import React, {useState, useEffect} from 'react';
 import {useAuth} from '../../contexts/AuthContext';
 import api from '../../lib/api';
 import './UserManagement.css';
+import Toast from '../../components/Toast';
+
+const BRANCH_OPTIONS = ['Hội sở', 'Chi nhánh 6', 'Chi nhánh Nam Hoa'];
 
 const UserManagement = () => {
     const {user, isAdmin} = useAuth();
@@ -12,6 +15,7 @@ const UserManagement = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
     const [formData, setFormData] = useState({
         employeeCode: '',
         fullName: '',
@@ -43,11 +47,13 @@ const UserManagement = () => {
 
     // Remove fetchStats function since the endpoint doesn't exist
 
+    const showToast = (message, type = 'info') => setToast({ show: true, message, type });
+
     const handleCreateUser = async (e) => {
         e.preventDefault();
 
         if (!formData.employeeCode || !formData.fullName || !formData.department || !formData.branch || !formData.password) {
-            alert('Please fill in all required fields');
+            showToast('Please fill in all required fields', 'error');
             return;
         }
 
@@ -63,10 +69,10 @@ const UserManagement = () => {
                 role: 'UPLOADER'
             });
             await fetchUsers();
-            alert('User created successfully!');
+            showToast('User created successfully!', 'success');
         } catch (err) {
             console.error('Error creating user:', err);
-            alert(err.response?.data?.message || 'Failed to create user');
+            showToast(err.response?.data?.message || 'Failed to create user', 'error');
         }
     };
 
@@ -74,7 +80,7 @@ const UserManagement = () => {
         e.preventDefault();
 
         if (!formData.fullName || !formData.department || !formData.branch) {
-            alert('Please fill in all required fields');
+            showToast('Please fill in all required fields', 'error');
             return;
         }
 
@@ -103,10 +109,10 @@ const UserManagement = () => {
                 role: 'UPLOADER'
             });
             await fetchUsers();
-            alert('User updated successfully!');
+            showToast('User updated successfully!', 'success');
         } catch (err) {
             console.error('Error updating user:', err);
-            alert(err.response?.data?.message || 'Failed to update user');
+            showToast(err.response?.data?.message || 'Failed to update user', 'error');
         }
     };
 
@@ -118,10 +124,10 @@ const UserManagement = () => {
         try {
             await api.delete(`/api/admin/users/${userToDelete.employeeCode}`);
             await fetchUsers();
-            alert('User deleted successfully!');
+            showToast('User deleted successfully!', 'success');
         } catch (err) {
             console.error('Error deleting user:', err);
-            alert(err.response?.data?.message || 'Failed to delete user');
+            showToast(err.response?.data?.message || 'Failed to delete user', 'error');
         }
     };
 
@@ -187,6 +193,7 @@ const UserManagement = () => {
 
     return (
         <div className="user-management-container">
+            <Toast show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast(prev => ({ ...prev, show: false }))} />
             {/* Header */}
             <div className="page-header">
                 <h1>User Management</h1>
@@ -311,12 +318,16 @@ const UserManagement = () => {
                                 </div>
                                 <div className="form-group">
                                     <label>Branch *</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={formData.branch}
                                         onChange={(e) => setFormData({...formData, branch: e.target.value})}
                                         required
-                                    />
+                                    >
+                                        <option value="" disabled>Select branch</option>
+                                        {BRANCH_OPTIONS.map((b) => (
+                                            <option key={b} value={b}>{b}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="form-group">
                                     <label>Password *</label>
@@ -390,12 +401,16 @@ const UserManagement = () => {
                                 </div>
                                 <div className="form-group">
                                     <label>Branch *</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={formData.branch}
                                         onChange={(e) => setFormData({...formData, branch: e.target.value})}
                                         required
-                                    />
+                                    >
+                                        <option value="" disabled>Select branch</option>
+                                        {BRANCH_OPTIONS.map((b) => (
+                                            <option key={b} value={b}>{b}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="form-group">
                                     <label>New Password (leave blank to keep current)</label>

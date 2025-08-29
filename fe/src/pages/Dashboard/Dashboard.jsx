@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../lib/api';
 import './Dashboard.css';
+import Toast from '../../components/Toast';
 
 const Dashboard = () => {
   const [periods, setPeriods] = useState([]);
@@ -11,9 +12,13 @@ const Dashboard = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPeriodName, setNewPeriodName] = useState('');
   const [creating, setCreating] = useState(false);
-  
+  const [deletingId, setDeletingId] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+
   const { user, isReviewer, isAdmin } = useAuth();
   const navigate = useNavigate();
+
+  const showToast = (message, type = 'info') => setToast({ show: true, message, type });
 
   useEffect(() => {
     fetchPeriods();
@@ -46,9 +51,10 @@ const Dashboard = () => {
       setPeriods(prev => [response.data, ...prev]);
       setShowCreateModal(false);
       setNewPeriodName('');
+      showToast('Tax period created successfully.', 'success');
     } catch (err) {
       console.error('Error creating period:', err);
-      alert(err.response?.data?.message || 'Failed to create tax period');
+      showToast(err.response?.data?.message || 'Failed to create tax period', 'error');
     } finally {
       setCreating(false);
     }
@@ -80,6 +86,24 @@ const Dashboard = () => {
     });
   };
 
+  const handleDeletePeriod = async (e, periodId, periodName) => {
+    e.stopPropagation();
+    if (deletingId) return;
+    const ok = window.confirm(`Delete tax period "${periodName}"? This will remove all uploaded files in this period. This action cannot be undone.`);
+    if (!ok) return;
+    try {
+      setDeletingId(periodId);
+      await api.delete(`/api/periods/${periodId}`);
+      setPeriods(prev => prev.filter(p => p.periodId !== periodId));
+      showToast('Tax period deleted successfully.', 'success');
+    } catch (err) {
+      console.error('Error deleting period:', err);
+      showToast(err.response?.data?.message || 'Failed to delete tax period', 'error');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="dashboard-container">
@@ -93,6 +117,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
+      <Toast show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast(prev => ({ ...prev, show: false }))} />
       <div className="dashboard-header">
         <div>
           <h1>Tax Period Dashboard</h1>
@@ -103,7 +128,7 @@ const Dashboard = () => {
           onClick={() => setShowCreateModal(true)}
         >
           <span className="btn-icon">+</span>
-          Create New Tax Period
+          Tạo mới chu kỳ thuế
         </button>
       </div>
 
@@ -135,6 +160,17 @@ const Dashboard = () => {
               className="period-card"
               onClick={() => navigate(`/periods/${period.periodId}`)}
             >
+              {isAdmin && (
+                <button
+                  className={`period-delete-btn ${deletingId === period.periodId ? 'deleting' : ''}`}
+                  title="Delete period"
+                  aria-label={`Delete period ${period.name}`}
+                  onClick={(e) => handleDeletePeriod(e, period.periodId, period.name)}
+                  disabled={deletingId === period.periodId}
+                >
+                  {deletingId === period.periodId ? '...' : '×'}
+                </button>
+              )}
               <div className="period-header">
                 <h3>{period.name}</h3>
                 {getStatusBadge(period.status)}

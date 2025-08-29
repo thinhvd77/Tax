@@ -41,8 +41,7 @@ function Layout({ children }) {
       <header className="app-header">
         <div className="app-header__inner">
           <div className="app-brand">
-            <img src={logoUrl} alt="Payroll Pro logo" className="app-logo" />
-            <h1 className="app-title">Payroll Pro <span className="badge">Enterprise</span></h1>
+            <img src={logoUrl} className="app-logo" />
           </div>
           <nav className="app-nav">
             <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -55,12 +54,8 @@ function Layout({ children }) {
             )}
             <div className="user-menu">
               <span className="user-info">
-                <span className="user-name">{user?.name}</span>
-                <span className="user-role">{user?.role}</span>
+                <span className="user-name">{user?.fullName}</span>
               </span>
-              <button className="nav-toggle" onClick={toggleTheme} aria-label="Toggle theme">
-                {theme === 'dark' ? '🌙' : '🌞'}
-              </button>
               <button className="logout-btn" onClick={logout}>
                 Logout
               </button>

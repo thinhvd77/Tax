@@ -138,6 +138,7 @@
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .period-card:hover {
@@ -395,4 +396,35 @@
   .period-stats {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* Delete button on period card */
+.period-delete-btn {
+  position: absolute;
+  top: 0 !important;
+  right: 0 !important;
+  width: 28px;
+  height: 28px;
+  /*border-radius: 9999px;*/
+  border: none !important;
+  /*background: #fff5f5;*/
+  color: #dc2626;
+  font-size: 20px !important;
+    font-weight: bold !important;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.period-delete-btn:hover {
+    font-size: 30px !important;
+}
+
+.period-delete-btn.deleting,
+.period-delete-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
