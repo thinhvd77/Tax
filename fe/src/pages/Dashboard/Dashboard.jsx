@@ -138,8 +138,8 @@ const Dashboard = () => {
                    onClose={() => setToast(prev => ({...prev, show: false}))}/>
             <div className="dashboard-header">
                 <div>
-                    <h1>Tax Period Dashboard</h1>
-                    <p>Manage payroll tax calculation periods</p>
+                    <h1>Dashboard</h1>
+                    <p>Quản lý các kỳ tính thuế thu nhập cá nhân</p>
                 </div>
                 <button
                     className="btn btn-primary"
@@ -162,13 +162,13 @@ const Dashboard = () => {
                 {periods.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-icon">📊</div>
-                        <h3>No Tax Periods Yet</h3>
-                        <p>Create your first tax period to start managing payroll calculations.</p>
+                        <h3>Chưa có chu kỳ thuế</h3>
+                        <p>Tạo chu kỳ thuế đầu tiên để bắt đầu quản lý tính toán thuế TNCN.</p>
                         <button
                             className="btn btn-primary"
                             onClick={() => setShowCreateModal(true)}
                         >
-                            Create Tax Period
+                            Tạo chu kỳ thuế
                         </button>
                     </div>
                 ) : (

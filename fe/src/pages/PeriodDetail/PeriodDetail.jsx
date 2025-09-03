@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {useParams, useNavigate} from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
 import {useAuth} from '../../contexts/AuthContext';
 import api from '../../lib/api';
 import './PeriodDetail.css';
@@ -83,12 +83,12 @@ const PeriodDetail = () => {
     const handleDeleteFile = async (fileId) => {
         setConfirmDialog({
             show: true,
-            message: 'Are you sure you want to delete this file?',
+            message: 'Bạn có chắc chắn muốn xóa tệp này không?',
             onConfirm: async () => {
                 try {
                     await api.delete(`/api/files/${fileId}`);
                     await fetchPeriod();
-                    showToast('File deleted successfully!', 'success');
+                    showToast('Xóa tệp thành công!', 'success');
                 } catch (err) {
                     console.error('Error deleting file:', err);
                     showToast(err.response?.data?.message || 'Failed to delete file', 'error');
@@ -105,8 +105,6 @@ const PeriodDetail = () => {
 
             // Debug: Log column detection
             if (response.data.columns) {
-                console.log('All columns:', response.data.columns);
-                console.log('Sample row data:', response.data.data[0]);
                 // Determine which columns are treated as currency (debug only)
                 const currencyColumns = response.data.columns.filter(col => {
                     const upperCol = col.toUpperCase();
@@ -115,7 +113,6 @@ const PeriodDetail = () => {
                         || (upperCol.includes('SL') && upperCol.includes('PHỤ THUỘC'));
                     return !isExcluded;
                 });
-                console.log('Columns that will be formatted as currency:', currencyColumns);
             }
 
             setShowPreview(true);
@@ -247,16 +244,16 @@ const PeriodDetail = () => {
                         onClick={() => navigate('/dashboard')}
                         className="back-button"
                     >
-                        ← Back to Dashboard
+                        🡄 Quay lại Dashboard
                     </button>
                     <div className="period-info">
                         <h1>{period.name}</h1>
                         <div className="period-meta">
               <span className={`status-badge status-${period.status.toLowerCase().replace('_', '-')}`}>
-                {period.status.replace('_', ' ')}
+                {period.status === 'IN_PROGRESS' ? 'ĐANG XỬ LÝ' : 'ĐÃ HOÀN THÀNH'}
               </span>
                             <span className="created-info">
-                Created by {period.createdBy} on {new Date(period.createdAt).toLocaleDateString()}
+                Được tạo bởi {period.createdBy} vào ngày {new Date(period.createdAt).toLocaleDateString()}
               </span>
                         </div>
                     </div>
@@ -267,18 +264,18 @@ const PeriodDetail = () => {
                 {/* File Upload Section */}
                 <div className="section">
                     <div className="section-header">
-                        <h2>File Upload</h2>
+                        <h2>Tải tệp lên</h2>
                     </div>
 
                     {period.status === 'IN_PROGRESS' ? (
                         <div className="upload-area">
                             <div className="upload-dropzone">
                                 <div className="upload-icon">📁</div>
-                                <h3>Drag and drop Excel files here</h3>
-                                <p>or click to browse for files</p>
+                                <h3>Kéo và thả file Excel vào đây</h3>
+                                <p>hoặc nhấp để chọn tệp</p>
                                 <input
                                     type="file"
-                                    accept=".xlsx,.xls"
+                                    accept=".xlsx"
                                     onChange={handleFileUpload}
                                     disabled={uploading}
                                     className="file-input"
@@ -302,12 +299,12 @@ const PeriodDetail = () => {
                 {/* Files List */}
                 <div className="section">
                     <div className="section-header">
-                        <h2>Uploaded Files ({period.files.length})</h2>
+                        <h2>Tệp đã tải lên ({period.files.length})</h2>
                     </div>
 
                     {period.files.length === 0 ? (
                         <div className="empty-files">
-                            <p>No files uploaded yet</p>
+                            <p>Chưa có tệp nào được tải lên</p>
                         </div>
                     ) : (
                         <div className="files-table">
@@ -358,21 +355,16 @@ const PeriodDetail = () => {
 
                 {/* Preview Section - Available for all authenticated users */}
                 <div className="section">
-                    <div className="section-header">
-                        <h2>Data Processing</h2>
-                        <p>Process uploaded files and preview tax calculations</p>
-                    </div>
-
                     <div className="actions-panel">
                         <div className="action-card">
-                            <h3>Consolidate & Preview Results</h3>
-                            <p>Process all uploaded files and preview tax calculations</p>
+                            <h2>Tổng hợp & Xem trước kết quả</h2>
+                            <p>Xử lý tất cả các tệp đã tải lên và xem trước kết quả tính thuế</p>
                             <button
                                 onClick={handleConsolidatePreview}
                                 disabled={period.files.length === 0 || processing}
                                 className="btn btn-primary"
                             >
-                                {processing ? 'Processing...' : 'Consolidate & Preview'}
+                                {processing ? 'Đang xử lý...' : 'Tổng hợp & Xem trước'}
                             </button>
                         </div>
                     </div>
@@ -382,40 +374,40 @@ const PeriodDetail = () => {
                 {isReviewer && (
                     <div className="section">
                         <div className="section-header">
-                            <h2>Reviewer Actions</h2>
-                            <p>Export reports and manage period status</p>
+                            <h2>Hành động của Người kiểm duyệt</h2>
+                            <p>Xuất báo cáo và quản lý trạng thái kỳ thuế</p>
                         </div>
 
                         <div className="actions-panel">
                             <div className="action-card">
-                                <h3>Export Final Report</h3>
-                                <p>Download the consolidated tax calculation report</p>
+                                <h3>Xuất báo cáo cuối cùng</h3>
+                                <p>Tải xuống báo cáo tính thuế tổng hợp</p>
                                 <button
                                     onClick={handleExportReport}
                                     disabled={period.status !== 'COMPLETED'}
                                     className="btn btn-success"
                                 >
-                                    Export Excel Report
+                                    Xuất báo cáo Excel
                                 </button>
                             </div>
 
                             <div className="action-card">
-                                <h3>Status Management</h3>
-                                <p>Update the period status</p>
+                                <h3>Quản lý trạng thái</h3>
+                                <p>Cập nhật trạng thái kỳ thuế</p>
                                 <div className="status-buttons">
                                     <button
                                         onClick={() => handleUpdateStatus('IN_PROGRESS')}
                                         disabled={period.status === 'IN_PROGRESS'}
                                         className="btn btn-secondary btn-small"
                                     >
-                                        Mark In Progress
+                                        Đánh dấu Đang xử lý
                                     </button>
                                     <button
                                         onClick={() => handleUpdateStatus('COMPLETED')}
                                         disabled={period.status === 'COMPLETED'}
                                         className="btn btn-success btn-small"
                                     >
-                                        Mark Completed
+                                        Đánh dấu Hoàn thành
                                     </button>
                                 </div>
                             </div>

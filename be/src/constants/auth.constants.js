@@ -2,7 +2,7 @@ const AUTH_CONSTANTS = {
   ERRORS: {
     USER_ID_REQUIRED: 'User ID is required',
     PASSWORD_REQUIRED: 'Password is required',
-    INVALID_CREDENTIALS: 'Invalid credentials',
+    INVALID_CREDENTIALS: 'Tài khoản hoặc mật khẩu không đúng',
     USER_NOT_FOUND: 'User not found',
     ACCESS_TOKEN_REQUIRED: 'Access token required',
     INVALID_TOKEN: 'Invalid token',
