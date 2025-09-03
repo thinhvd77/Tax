@@ -64,43 +64,43 @@ const parseBonusFile = (buffer) => {
     return {bonusMap};
 };
 
-const parseMultiSheetBonusFile = (buffer) => {
-    const bonuses = [];
-    try {
-        const workbook = xlsx.read(buffer, {type: "buffer"});
-        const toNumber = (val) => {
-            if (val === null || val === undefined || val === '') return 0;
-            if (typeof val === 'number') return val;
-            const cleaned = val.toString().replace(/[\s,]/g, '');
-            const n = parseFloat(cleaned);
-            return isNaN(n) ? 0 : n;
-        };
-        const normName = (name) => name
-            .toString()
-            .normalize('NFD')
-            .replace(/\p{Diacritic}/gu, '')
-            .trim()
-            .toLowerCase();
-        for (const sheetName of workbook.SheetNames) {
-            const rows = xlsx.utils
-                .sheet_to_json(workbook.Sheets[sheetName], {header: 1})
-                .slice(1);
-            const bonusMap = new Map();
-            for (const row of rows) {
-                const name = row[1];
-                const amount = toNumber(row[2] || 0);
-                if (name && amount > 0) {
-                    bonusMap.set(normName(name), { name: row[1], amount });
-                }
-            }
-            const title = (sheetName || "Thưởng").toString().replace(/_/g, " ").trim();
-            bonuses.push({title, bonusMap});
-        }
-    } catch (e) {
-        console.error("Lỗi đọc file thưởng nhiều sheet:", e);
-    }
-    return bonuses;
-};
+// const parseMultiSheetBonusFile = (buffer) => {
+//     const bonuses = [];
+//     try {
+//         const workbook = xlsx.read(buffer, {type: "buffer"});
+//         const toNumber = (val) => {
+//             if (val === null || val === undefined || val === '') return 0;
+//             if (typeof val === 'number') return val;
+//             const cleaned = val.toString().replace(/[\s,]/g, '');
+//             const n = parseFloat(cleaned);
+//             return isNaN(n) ? 0 : n;
+//         };
+//         const normName = (name) => name
+//             .toString()
+//             .normalize('NFD')
+//             .replace(/\p{Diacritic}/gu, '')
+//             .trim()
+//             .toLowerCase();
+//         for (const sheetName of workbook.SheetNames) {
+//             const rows = xlsx.utils
+//                 .sheet_to_json(workbook.Sheets[sheetName], {header: 1})
+//                 .slice(1);
+//             const bonusMap = new Map();
+//             for (const row of rows) {
+//                 const name = row[1];
+//                 const amount = toNumber(row[2] || 0);
+//                 if (name && amount > 0) {
+//                     bonusMap.set(normName(name), { name: row[1], amount });
+//                 }
+//             }
+//             const title = (sheetName || "Thưởng").toString().replace(/_/g, " ").trim();
+//             bonuses.push({title, bonusMap});
+//         }
+//     } catch (e) {
+//         console.error("Lỗi đọc file thưởng nhiều sheet:", e);
+//     }
+//     return bonuses;
+// };
 
 const parseDependentsFile = (buffer) => {
     const dependentsMap = new Map();
@@ -186,7 +186,6 @@ const parseTruylinhFile = (buffer) => {
     }
     return truylinhMap;
 };
-
 
 const classifyFiles = (files) => {
     let payrollFile = null;
@@ -380,8 +379,6 @@ const processPayrollWithBonuses = (
     let noContractTotalRow = {}; // Define this to be accessible later
 
     if (noContractEmployees.size > 0) {
-        // initialResults.push({ STT: "", "HỌ VÀ TÊN": "Không có HĐ lao động", "CHỨC VỤ": "" });
-
         const noContractResults = [];
         let sttCounter = 1;
         noContractEmployees.forEach(({ name }, normalizedName) => {
@@ -468,14 +465,9 @@ const processUploadedFiles = (files) => {
             : new Map();
         let bonusData = [];
         for (const file of bonusFiles) {
-            const parsedSheets = parseMultiSheetBonusFile(file.buffer);
-            if (parsedSheets.length > 0) {
-                bonusData.push(...parsedSheets);
-            } else {
-                const {bonusMap} = parseBonusFile(file.buffer);
-                const title = file.originalname.split(".")[0].replace(/_/g, " ").trim();
-                bonusData.push({title, bonusMap});
-            }
+            const {bonusMap} = parseBonusFile(file.buffer);
+            const title = file.originalname.split(".")[0].replace(/_/g, " ").trim();
+            bonusData.push({title, bonusMap});
         }
         const data = processPayrollWithBonuses(
             payrollFile.buffer,
